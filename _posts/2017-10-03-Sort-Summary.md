@@ -77,7 +77,6 @@ title: 经典排序算法归纳
 			    	swap(a[j], a[j + 1]);
 		    	}			
 		    }
-		    print(a, size);
 	    }
 	}
 

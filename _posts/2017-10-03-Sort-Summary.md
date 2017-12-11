@@ -297,12 +297,4 @@ title: 经典排序算法归纳
 
 
 **【参考】**
-[八大排序算法](http://blog.csdn.net/hguisu/article/details/7776068) |
-
-[各种排序算法总结和比较](https://www.cnblogs.com/zhaoshuai1215/p/3448154.html) |
-
-
-[稳定排序和不稳定排序](https://www.cnblogs.com/codingmylife/archive/2012/10/21/2732980.html)|
-
-
-[三种线性排序算法 计数排序、桶排序与基数排序](https://www.byvoid.com/zhs/blog/sort-radix)|
+[八大排序算法](http://blog.csdn.net/hguisu/article/details/7776068) |[各种排序算法总结和比较](https://www.cnblogs.com/zhaoshuai1215/p/3448154.html) |[稳定排序和不稳定排序](https://www.cnblogs.com/codingmylife/archive/2012/10/21/2732980.html)|[三种线性排序算法 计数排序、桶排序与基数排序](https://www.byvoid.com/zhs/blog/sort-radix)|

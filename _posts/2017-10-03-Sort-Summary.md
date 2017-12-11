@@ -273,6 +273,9 @@ title: 经典排序算法归纳
 **算法实现：**
 	
 
+ 
+ 
+
     void count_sort(int *a, int *b, int size, int k){//a为输入数组，b为输出数组，size为数组大小，数组中元素的值为[0,k]之间
 	    int *c = new int[k + 1];//临时数组，用来记录当前值为k的元素应放的位置
     	for (int i = 0; i < k + 1; i++)
@@ -289,6 +292,7 @@ title: 经典排序算法归纳
     	delete [] c;
     }
 
+
 **（2）基数排序算法**
 **基本思想：** 
 
@@ -297,11 +301,16 @@ title: 经典排序算法归纳
 **复杂度分析：**
 
 **算法实现:**
-void radix_sort(int *a,int size,int d){//最大位数为d
-        int *c=new int[10];
-         int *b=new int[size];
-         for(int k=1;k<=d;k++){
-                 for(int i=0;i<10;i++)
+
+```
+
+
+
+    void radix_sort(int *a,int size,int d){//最大位数为d 
+           int *c=new int[10];                      
+            int *b=new int[size];            
+         for(int k=1;k<=d;k++){         
+                 for(int i=0;i<10;i++)                 
                         c[i]=0;
                  for(int i=0;i<size;i++){
                         int i_key=a[i]/(int)(pow(10,k-1))-(int)(a[i]/(pow(10,k)))*10;
@@ -321,7 +330,9 @@ void radix_sort(int *a,int size,int d){//最大位数为d
          }
          delete [] c;
          delete [] b;
- }
+    }
+
+ ```
 
 
 

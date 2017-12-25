@@ -148,3 +148,10 @@ int count_one2(unsigned a){
 	return a;
 }
 ```
+## 三、位运算的一些资料
+
+[位运算入门教程](https://www.jiuzhang.com/tutorial/bit-manipulation/72)
+[位操作基础篇之位操作全面总结](http://blog.csdn.net/morewindows/article/details/7354571)
+[位运算简介及实用技巧（三）：进阶篇(2)](http://blog.csdn.net/l290781453/article/details/21640665)
+
+

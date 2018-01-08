@@ -155,7 +155,7 @@ void solve(Node n) {
     solve要在给定的matrix上试图给第i行每个位置放queen。
     
 
-```
+```c++
     bool hasNQueen(int n){//n皇后问题有没有解(理论上应该n>=4的时候，才称为n皇后问题)
 		if (n == 0) return false;
 		vector<int> matrix;//用一个vector存放皇后的坐标，matrix的下标值表示行，用matrix的元素值表示列
@@ -200,7 +200,7 @@ void solve(Node n) {
     solve要在给定的matrix上试图给第i行每个位置放queen。
     这里为了记录解的个数，设置一个全局变量(static)int是比较efficient的做法。
 
-```
+```c++
     int totalNQueens(int n) {//判断有多少个解
 		if (n <= 0) return  0;
 		vector<int> matrix;
@@ -242,7 +242,7 @@ void solve(Node n) {
     这里为了记录解的具体情况，设置一个全局变量(static)集合是比较efficient的做法。
     当然也可以把结果集合作为参数传来传去。
 
-```
+```c++
     vector<vector<string>> solveNQueens(int n) {
 		vector<vector<string> > res;
 		if (n <= 0) return res;
@@ -282,7 +282,7 @@ void solve(Node n) {
 
 其中判断matrix合法的函数
 
-```
+```c++
 bool isValid(vector<int> &matrix){//判断当前矩阵是否合法，
 		//应该要分别判断行、列、两条对角线是否重合，但是用vector的下标表示行，则row默认不会重合
 		int row = matrix.size()-1;
@@ -324,7 +324,7 @@ If n = 4 and k = 2, a solution is:
 
 这道题让求1到n共n个数字里k个数的组合数的所有情况，还是要用深度优先搜索DFS来解，根据以往的经验，像这种要求出所有结果的集合，一般都是用DFS调用递归来解。那么我们建立一个保存最终结果的大集合res，还要定义一个保存每一个组合的小集合out，每次放一个数到out里，定义一个level来记录当前递归层数（从1开始），终止条件为level==k+1，即超出了边界。（也可以用out.size（）来进行判断：如果out里数个数到了k个，则把out保存到最终结果中，否则在下一层中继续调用递归。）
 
-```
+```c++
 class Solution {
 public:
     vector<vector<int>> combine(int n, int k) {
@@ -364,7 +364,7 @@ If nums = [1,2,3], a solution is:
 #### **思路**
 这道与之前求combination的题目类似，只不过这里的k不是固定的，而是从0变化到n，其余一样，代码如下：
 
-```
+```c++
 class Solution {
 public:
     vector<vector<int> > subsets(vector<int>& nums) {
@@ -413,7 +413,7 @@ For example,
 #### **思路**
 这道题是求全排列问题，给的输入数组没有重复项，这跟之前的那道 Combinations 组合项 和类似，解法基本相同，但是不同点在于那道不同的数字顺序只算一种，是一道典型的组合题，而此题是求全排列问题，还是用递归DFS来求解。这里我们需要用到一个visited数组来标记某个数字是否访问过，然后在DFS递归函数从的循环应从头开始，而不是从level开始，这是和 Combinations 组合项 不同的地方，其余思路大体相同，代码如下：
 
-```
+```c++
 class Solution {////原来的数组中不包含重复元素
 public:
 	vector<vector<int>> permute(vector<int>& nums) {
@@ -455,7 +455,7 @@ For example,
 #### **思路**
 这道题是之前那道 Permutations 全排列的延伸，由于输入数组有可能出现重复数字，如果按照之前的算法运算，会有重复排列产生，我们要避免重复的产生，**在递归函数中要判断前面一个数和当前的数是否相等，如果相等，前面的数必须已经使用了，即对应的visited中的值为1，当前的数字才能使用，否则需要跳过**，这样就不会产生重复排列了，代码如下：
 
-```
+```c++
 class Solution2 {//原来的数组中包含重复元素
 public:
 	vector<vector<int>> permuteUnique(vector<int>& nums) {

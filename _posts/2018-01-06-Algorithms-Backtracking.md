@@ -545,13 +545,79 @@ public:
 };
 ```
 
+##  LeetCode——Palindrome Partitioning（拆分回文串）
+
+#### **问题描述**
+
+Given a string s, partition s such that every substring of the partition is a palindrome.
+
+Return all possible palindrome partitioning of s.
+
+For example, given s = "aab",
+Return
+
+```
+[
+  ["aa","b"],
+  ["a","a","b"]
+]
+```
+
+#### **思路**
+这又是一道需要用DFS来解的题目，既然题目要求找到所有可能拆分成回文数的情况，那么肯定是所有的情况都要遍历到，对于每一个子字符串都要分别判断一次是不是回文数，那么肯定有一个判断回文数的子函数，还需要一个DFS函数用来递归，再加上原本的这个函数，总共需要三个函数来求解。代码如下：
 
 
+```c++
+class Solution {
+public:
+	vector<vector<string>> partition(string s) {
+		vector<vector<string> > res;
+		vector<string> out;
+		solve(0, s.size(), s, out, res);
+		return res;
+	}
+
+	void solve(int start, int n, string s,vector<string> &out, vector<vector<string> > &res){
+		if (n == 0){
+			res.push_back(out);
+		}
+		else{
+			for (int count = 1; count <= n; count++){//子串的长度从1到n(n为从start到字符结尾的长度）
+				string s_tmp = s.substr(start, count);
+				if (isPalindrome(s_tmp)){
+					out.push_back(s_tmp);
+					solve(start + count, n - count, s, out, res);//考察去掉该子串后剩余的子串
+					out.pop_back();
+				}
+			}
+		}
+	}
+
+	bool isPalindrome(string s){
+		if (s.empty())
+			return false;
+		int beg = 0, end = s.size() - 1;
+		while (beg < end){
+			if (s[beg] != s[end])
+				return false;
+			beg++;
+			end--;
+		}
+		return true;
+	}
+};
+```
+ 
+ 
+
+
+那么，对原字符串的所有子字符串的访问顺序是什么呢，如果原字符串是 abcd, 那么访问顺序为: a -> b -> c -> d -> cd -> bc -> bcd-> ab -> abc -> abcd, 这是对于没有两个或两个以上子回文串的情况。那么假如原字符串是 aabc，那么访问顺序为：a -> a -> b -> c -> bc -> ab -> abc -> aa -> b -> c -> bc -> aab -> aabc，中间当检测到aa时候，发现是回文串，那么对于剩下的bc当做一个新串来检测，于是有 b -> c -> bc，这样扫描了所有情况，即可得出最终答案。
 
 
 ##  参考
 [[Leetcode] Backtracking回溯法(又称DFS,递归)全解](https://segmentfault.com/a/1190000006121957)
 [[LeetCode] Permutations 全排列](http://www.cnblogs.com/grandyang/p/4358848.html)
 [[LeetCode] Permutations II 全排列之二](http://www.cnblogs.com/grandyang/p/4359825.html)
+[[LeetCode] Palindrome Partitioning 拆分回文串](https://www.cnblogs.com/grandyang/p/4270008.html)
 
 

@@ -390,6 +390,63 @@ public:
 };
 ```
 
+##  LeetCode——Subsets II（求子集）
+
+#### **问题描述**
+
+Given a collection of integers that might contain duplicates, nums, return all possible subsets (the power set).
+Note: The solution set must not contain duplicate subsets.
+For example,
+If nums = [1,2,2], a solution is:
+···
+[
+  [2],
+  [1],
+  [1,2,2],
+  [2,2],
+  [1,2],
+  []
+]
+···
+
+#### **思路**
+可以参考LeetCode——Permutations II(全排列II 含有重复元素)的解法，用一个visited数组记录每一个元素的访问状态，当一个元素与上一个元素相同，并且上一个元素处于未访问状态时，则可以跳过该元素。
+
+```c++
+class Solution {
+public:
+	vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+		vector<vector<int> > res;
+		vector<int> out;
+		vector<bool> visited(nums.size(), false);
+		sort(nums.begin(), nums.end());
+		for (int k = 0; k <= nums.size(); k++){			
+			solve(0, k, nums, visited, out, res);
+		}
+		return res;
+	}
+
+	void solve(int first, int k, vector<int> &nums, vector<bool> &visited, vector<int> &out, vector<vector<int> > &res){
+		if (out.size() == k)
+			res.push_back(out);
+		else{
+			for (int i = first; i<nums.size(); i++){
+				if (k == 3 && first==0 && i==1)
+					cout << endl;
+				if (i>0 && !visited[i - 1] && nums[i - 1] == nums[i])
+					continue;
+				out.push_back(nums[i]);
+				visited[i] = true;
+				solve(i + 1, k, nums, visited, out, res);//注意是i+1，而不是first+1
+				visited[i] = false;
+				out.pop_back();
+			}
+		}
+	}
+};
+
+```
+
 
 ##  LeetCode——Permutations(全排列)
 

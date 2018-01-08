@@ -143,7 +143,6 @@ void solve(Node n) {
 #### **解答**
 **1. 有没有解**
 
-
 **怎么做：**  一行一行地放queen，每行尝试n个可能，有一个可达，返回true；都不可达，返回false。
 
 **边界条件leaf：** 放完第n行 或者 该放第n+1行（出界，返回）
@@ -302,7 +301,200 @@ bool isValid(vector<int> &matrix){//判断当前矩阵是否合法，
 	}
 ```
 
+##  LeetCode——Combinations(组合)
+
+#### **问题描述**
+
+Given two integers n and k, return all possible combinations of k numbers out of 1 ... n.
+
+For example,
+If n = 4 and k = 2, a solution is:
+
+```
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+```
+#### **思路**
+
+这道题让求1到n共n个数字里k个数的组合数的所有情况，还是要用深度优先搜索DFS来解，根据以往的经验，像这种要求出所有结果的集合，一般都是用DFS调用递归来解。那么我们建立一个保存最终结果的大集合res，还要定义一个保存每一个组合的小集合out，每次放一个数到out里，定义一个level来记录当前递归层数（从1开始），终止条件为level==k+1，即超出了边界。（也可以用out.size（）来进行判断：如果out里数个数到了k个，则把out保存到最终结果中，否则在下一层中继续调用递归。）
+
+```
+class Solution {
+public:
+    vector<vector<int>> combine(int n, int k) {
+        vector<vector<int> > res;
+        if(n<k) return res;
+        vector<int> out;
+        solve(1,1,n,k,out,res);
+        return res;
+    }
+    
+    void solve(int level,int first,int n,int k,vector<int> &out,vector<vector<int> > &res){//level表示当前层数，first表示开始元素
+        if(level==k+1){
+            res.push_back(out);
+        }
+        else{
+            for(int i=first;i<=n;i++){
+                out.push_back(i);
+                solve(level+1,i+1,n,k,out,res);
+                out.pop_back();
+            }
+        }
+    }
+};
+```
+
+
+##  LeetCode——Subsets（求子集）
+
+#### **问题描述**
+Given a set of distinct integers, nums, return all possible subsets (the power set).
+
+Note: The solution set must not contain duplicate subsets.
+
+For example,
+If nums = [1,2,3], a solution is:
+
+#### **思路**
+这道与之前求combination的题目类似，只不过这里的k不是固定的，而是从0变化到n，其余一样，代码如下：
+
+```
+class Solution {
+public:
+    vector<vector<int> > subsets(vector<int>& nums) {
+		vector<vector<int> > res;
+		vector<int> out;
+		for (int k = 0; k <= nums.size(); k++){//k从0变化到n
+			solve(0, k, nums, out, res);
+		}
+		return res;
+	}
+
+	void solve(int first, int k, vector<int> &nums,vector<int> &out, vector<vector<int> > &res){
+		if (out.size() == k)
+			res.push_back(out);
+		else{
+			for (int i = first; i < nums.size(); i++){
+				out.push_back(nums[i]);
+				solve(i + 1, k, nums, out, res);
+				out.pop_back();
+			}
+		}
+	}
+};
+```
+
+
+##  LeetCode——Permutations(全排列)
+
+
+#### **问题描述**
+Given a collection of distinct numbers, return all possible permutations.
+
+For example,
+[1,2,3] have the following permutations:
+
+```
+[
+  [1,2,3],
+  [1,3,2],
+  [2,1,3],
+  [2,3,1],
+  [3,1,2],
+  [3,2,1]
+]
+```
+#### **思路**
+这道题是求全排列问题，给的输入数组没有重复项，这跟之前的那道 Combinations 组合项 和类似，解法基本相同，但是不同点在于那道不同的数字顺序只算一种，是一道典型的组合题，而此题是求全排列问题，还是用递归DFS来求解。这里我们需要用到一个visited数组来标记某个数字是否访问过，然后在DFS递归函数从的循环应从头开始，而不是从level开始，这是和 Combinations 组合项 不同的地方，其余思路大体相同，代码如下：
+
+```
+class Solution {////原来的数组中不包含重复元素
+public:
+	vector<vector<int>> permute(vector<int>& nums) {
+		vector<vector<int> > res;
+		vector<int> out;
+		vector<bool> visited(nums.size(), false);//该数组用来记录相应下标的元素有没有被访问，初始时为false		
+		solve(0, out, nums,visited, res);
+		return res;
+	}
+
+	void solve(int level, vector<int> &out, vector<int> &nums,vector<bool> &visited,vector<vector<int> > &res){
+		if (level == nums.size()){
+			res.push_back(out);
+			return;
+		}
+		else{
+			for (int i = 0; i < nums.size(); i++){				
+				if (!visited[i]){
+					out.push_back(nums[i]);
+					visited[i] = true;
+					solve(level + 1, out, nums, visited, res);
+					visited[i] = false;
+					out.pop_back();
+				}				
+			}
+		}
+	}
+};
+```
+
+##  LeetCode——Permutations II(全排列II 含有重复元素)
+
+#### **问题描述**
+Given a collection of numbers that might contain duplicates, return all possible unique permutations.
+
+For example,
+[1,1,2] have the following unique permutations:
+
+#### **思路**
+这道题是之前那道 Permutations 全排列的延伸，由于输入数组有可能出现重复数字，如果按照之前的算法运算，会有重复排列产生，我们要避免重复的产生，**在递归函数中要判断前面一个数和当前的数是否相等，如果相等，前面的数必须已经使用了，即对应的visited中的值为1，当前的数字才能使用，否则需要跳过**，这样就不会产生重复排列了，代码如下：
+
+```
+class Solution2 {//原来的数组中包含重复元素
+public:
+	vector<vector<int>> permuteUnique(vector<int>& nums) {
+		vector<vector<int> > res;
+		vector<int> out;
+		vector<bool> visited(nums.size(), false);
+		sort(nums.begin(), nums.end());//将nums进行排序
+		solve(0, out, nums, res, visited);
+		return res;
+	}
+
+	void solve(int level, vector<int> &out, vector<int> &nums, vector<vector<int> > &res, vector<bool> &visited){
+		if (level == nums.size()){
+			res.push_back(out);			
+		}
+		else{
+			for (int i = 0; i < nums.size(); i++){				
+				if (!visited[i]){
+					if (i>0 && nums[i] == nums[i - 1] && !visited[i - 1])
+						continue;
+					out.push_back(nums[i]);
+					visited[i] = true;					
+					solve(level + 1, out, nums, res, visited);
+					visited[i] = false;
+					out.pop_back();
+				}
+			}
+		}
+	}
+};
+```
+
+
+
+
 
 ##  参考
 [[Leetcode] Backtracking回溯法(又称DFS,递归)全解](https://segmentfault.com/a/1190000006121957)
+[[LeetCode] Permutations 全排列](http://www.cnblogs.com/grandyang/p/4358848.html)
+[[LeetCode] Permutations II 全排列之二](http://www.cnblogs.com/grandyang/p/4359825.html)
+
 

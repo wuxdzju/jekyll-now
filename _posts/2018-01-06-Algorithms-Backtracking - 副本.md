@@ -613,6 +613,74 @@ public:
 
 那么，对原字符串的所有子字符串的访问顺序是什么呢，如果原字符串是 abcd, 那么访问顺序为: a -> b -> c -> d -> cd -> bc -> bcd-> ab -> abc -> abcd, 这是对于没有两个或两个以上子回文串的情况。那么假如原字符串是 aabc，那么访问顺序为：a -> a -> b -> c -> bc -> ab -> abc -> aa -> b -> c -> bc -> aab -> aabc，中间当检测到aa时候，发现是回文串，那么对于剩下的bc当做一个新串来检测，于是有 b -> c -> bc，这样扫描了所有情况，即可得出最终答案。
 
+##  LeetCode——gray code（格雷码）
+#### **问题描述**
+The gray code is a binary numeral system where two successive values differ in only one bit.
+
+Given a non-negative integer n representing the total number of bits in the code, print the sequence of gray code. A gray code sequence must begin with 0.
+
+For example, given n = 2, return [0,1,3,2]. Its gray code sequence is:
+
+```
+00 - 0
+01 - 1
+11 - 3
+10 - 2
+```
+Note:
+For a given n, a gray code sequence is not uniquely defined.
+
+For example, [0,2,3,1] is also a valid gray code sequence according to the above definition.
+
+For now, the judge is able to judge based on one instance of gray code sequence. Sorry about that.
+
+#### **思路**
+**第一种解法** 
+（参考网上的，不是太理解）
+代码如下：
+```c++
+    vector<int> grayCode(int n) {
+		vector<int> res;
+		int out = 0;
+		solve(0, n, out, res);
+		return res;
+	}
+
+	void solve(int k, int n,int &out, vector<int> &res){
+		if (k == n){
+			res.push_back(out);
+			return;
+		}
+		solve(k + 1, n, out, res);
+		out = out ^ (1 << (n - k - 1));
+		solve(k + 1, n, out, res);
+	}
+```
+
+**第二种解法**
+![_config.yml]({{ site.baseurl }}/images/gray_code.png)
+如上图所示，可以发现格雷码的规律：
+1位的格雷码就是0，1
+2位的格雷码是在一位的格雷码前面加上0或1.
+并由上图可以发现，2位的格雷码后一位是镜像对称的；3位的格雷码的后两位是镜像对称的；4位的格雷码后3位是镜像对称的。
+规律就是n位格雷码是n-1位格雷码的基础上，先将n-1位镜像对称，然后前一半首位加0，后一半首位添1得到。如果要输出n位格雷码，就得先生成n-1位格雷码，这样自然会想到用回溯的方法来编程。
+具体实现要先考虑基本的case，也就是n=1的情况，应该先在vector中添加两个数0,1，之后n=2的时候倒着读加上1。
+
+```c++
+ vector<int> grayCode(int n) {
+		if (n == 0){
+			vector<int> res = { 0 };
+			return res;
+		}
+		vector<int> res = grayCode(n - 1);
+		int orgSize = res.size();
+		for (int i = orgSize - 1; i >= 0; i--){
+			res.push_back((1 << (n - 1)) + res[i]);
+		}
+		return res;
+    }
+```
+
 
 ##  参考
 [[Leetcode] Backtracking回溯法(又称DFS,递归)全解](https://segmentfault.com/a/1190000006121957)

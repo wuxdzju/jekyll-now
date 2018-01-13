@@ -206,7 +206,7 @@ void reorderList(ListNode* head) {
 	}
 ```
 ### 6、有关单链表中环的问题
-### 相关知识
+#### 相关知识
 给定一个单链表，判断其中是否有环，已经是一个比较老同时也是比较经典的问题。
 
 首先，关于单链表中的环，一般涉及到以下问题：
@@ -218,8 +218,46 @@ void reorderList(ListNode* head) {
 6. 如何判断两个无环链表是否相交；
 7. 如果相交，求出第一个相交的节点；
 
+#### 1）判断是否有环（链表头指针为head）
+对于这个问题我们可以采用“快慢指针”的方法。就是有两个指针fast和slow，开始的时候两个指针都指向链表头head，然后在每一步
 
+操作中slow向前走一步即：slow = slow->next，而fast每一步向前两步即：fast = fast->next->next。
 
+由于fast要比slow移动的快，如果有环，fast一定会先进入环，而slow后进入环。当两个指针都进入环之后，经过一定步的操作之后
+
+二者一定能够在环上相遇，并且此时slow还没有绕环一圈，也就是说一定是在slow走完第一圈之前相遇。证明可以看下图：
+![_config.yml]({{ site.baseurl }}/images/circle_chain1.png)
+当slow刚进入环时每个指针可能处于上面的情况，接下来slow和fast分别向前走。slow每次向前走一步，fast向前追了两步，因此**每一步操作后fast到slow的距离缩短了1步**，这样继续下去就会使得
+两者之间的距离逐渐缩小：...、5、4、3、2、1、0 -> 相遇。又因为在同一个环中fast和slow之间的距离不会大于环的长度，因此
+
+到二者相遇的时候slow一定还没有走完一周（或者正好走完以后，这种情况出现在开始的时候fast和slow都在环的入口处）。
+
+###### leetcode相关题目——Linked List Cycle
+**题目描述**
+Given a linked list, determine if it has a cycle in it.
+
+Follow up:
+Can you solve it without using extra space?
+
+**思路**
+用两个快慢指针，快指针每次走2步，慢指针每次走1步，如果有环的话，快慢指针最终定会相遇。
+
+```c++
+class Solution {
+public:
+    bool hasCycle(ListNode *head) {
+        ListNode *slow=head,*fast=head;
+        while(fast && fast->next){
+            slow=slow->next;
+            fast=fast->next->next;
+            if(slow==fast)
+                return true;
+        }
+        return false;
+    }
+};
+```
+#### 2）找出环的入口
 
 ##  参考
 

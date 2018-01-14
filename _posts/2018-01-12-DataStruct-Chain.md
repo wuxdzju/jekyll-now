@@ -207,6 +207,7 @@ void reorderList(ListNode* head) {
 ```
 ### 6、有关单链表中环的问题
 #### 相关知识
+【转】[https://www.cnblogs.com/dancingrain/p/3405197.html](https://www.cnblogs.com/dancingrain/p/3405197.html)
 给定一个单链表，判断其中是否有环，已经是一个比较老同时也是比较经典的问题。
 
 首先，关于单链表中的环，一般涉及到以下问题：
@@ -258,9 +259,95 @@ public:
 };
 ```
 #### 2）找出环的入口
+![_config.yml]({{ site.baseurl }}/images/circle_chain2.png)
+
+从上面的分析可知，当fast和slow相遇时，slow还没有走完链表，假设fast已经在环内循环了n（1<=n)圈。假设slow走了s步，fast则走了2s步，又由于fast走过的步数=s+n*r（s+在环上多走的n圈），则有下面的等式：
+2*s = s + n  * r ; (1)
+ => s = n*r (2)
+ 如果假设整个链表的长度是L，入口和相遇点的距离是x（如上图所示），起点到入口的距离是a（如上图所示），则有
+ a + x = s = n * r; (3)  由（2）推出
+a + x = (n - 1) * r + r  = (n - 1) * r + (L - a) (4) 由环的长度 = 链表总长度 - 起点到入口点的距离求出
+a = (n - 1) * r + (L -a -x) (5)
+
+**集合式子（5）以及上图我们可以看出，从链表起点head开始到入口点的距离a,与从slow和fast的相遇点（如图）到入口点的距离相等。**
+因此，我们可以分别用一个指针（ptr1，ptr2），同时从head与slow和fast的相遇点出发，每一次操作走一步，直到ptr1==ptr2，此时的位置也就是入口点！
+###### leetcode相关题目——Linked List CycleII
+**题目描述**
+Given a linked list, return the node where the cycle begins. If there is no cycle, return null.
+
+Note: Do not modify the linked list.
+
+Follow up:
+Can you solve it without using extra space?
+**思路**
+根据之前的分析，我们可以分别用一个指针（ptr1，ptr2），同时从head与slow和fast的相遇点出发，每一次操作走一步，直到ptr1==ptr2，此时的位置也就是入口点！
+
+```c++
+class Solution {
+public:
+    ListNode *detectCycle(ListNode *head) {
+        //先用快慢指针找到slow和fast的相遇点
+        ListNode *slow=head,*fast=head;
+        while(fast && fast->next){
+            slow=slow->next;
+            fast=fast->next->next;
+            if(slow==fast)
+                break;
+        }
+        //没有环，则返回nullptr
+        if(!fast || !fast->next){
+            return nullptr;
+        }      
+        //分别从head和相遇点出发，每次走一步，当二者相遇时，即为所求的节点
+        while(head!=slow){
+            head=head->next;
+            slow=slow->next;
+        }   
+        return slow;
+    }
+};
+```
+#### 3）如果存在环，求环上的节点的个数：
+思路1：记录下相遇节点存入临时变量tempPtr，然后让slow(或者fast，都一样)继续向前走slow = slow -> next；一直到slow == tempPtr; 此时经过的步数就是环上节点的个数；
+
+思路2： 从相遇点开始slow和fast继续按照原来的方式向前走slow = slow -> next; fast = fast -> next -> next；直到二者再次项目，此时经过的步数就是环上节点的个数 。
+
+
+第一种思路很简单，其实就是一次遍历链表的环，从而统计出点的个数，没有什么可以详细解释的了。
+
+对于第二种思路，我们可以这样想，结合上面的分析，fast和slow没一次操作都会使得两者之间的距离较少1。我们可以把两者相遇的时候看做两者之间的距离正好是整个环的
+
+长度r。因此，当再次相遇的时候所经过的步数正好是环上节点的数目。
+
+#### 4）如果存在环，求出链表的长度：
+到这里，问题已经简单的多了，因为我们在问题1、2、3中已经做得足够的”准备工作“。
+我们可以这样求出整个链表的长度：
+
+链表长度L = 起点到入口点的距离 + 环的长度r;
+
+已经知道了起点和入口点的位置，那么两者之间的距离很好求了吧！环的长度也已经知道了，因此该问题也就迎刃而解了！
+
+#### 5）如果存在环，求出链表的长度：
+求出环上距离任意一个节点最远的点（对面节点）
+如下图所示，点1和4、点2和5、点3和6分别互为”对面节点“ ，也就是换上最远的点，我们的要求是怎么求出换上任意一个点的最远点。
+![_config.yml]({{ site.baseurl }}/images/circle_chain3.png)
+对于换上任意的一个点ptr0, 我们要找到它的”对面点“，可以这样思考：同样使用上面的快慢指针的方法，让slow和fast都指向ptr0，每一步都执行与上面相同的操作（slow每次跳一步，fast每次跳两步），
+
+当fast = ptr0或者fast = prt0->next的时候slow所指向的节点就是ptr0的”对面节点“。
+
+为什么是这样呢？我们可以这样分析：
+![_config.yml]({{ site.baseurl }}/images/circle_chain4.png)
+
+#### 6）对于问题6（扩展）如何判断两个无环链表是否相交，和7（扩展）如果相交，求出第一个相交的节点
+对于问题6（扩展）如何判断两个无环链表是否相交，和7（扩展）如果相交，求出第一个相交的节点，其实就是做一个问题的转化：
+假设有连个链表listA和listB，如果两个链表都无环，并且有交点，那么我们可以让其中一个链表（不妨设是listA）的为节点连接到其头部，这样在listB中就一定会出现一个环。
+因此我们将问题6和7分别转化成了问题1和2.
+看看下图就会明白了：
+![_config.yml]({{ site.baseurl }}/images/circle_chain5.png)
+
 
 ##  参考
 
 [[LeetCode] Sort List 链表排序](https://www.cnblogs.com/grandyang/p/4249905.html)
-[判断链表中是否有环 ----- 有关单链表中环的问题](https://www.cnblogs.com/dancingrain/p/3405197.html)[https://www.cnblogs.com/dancingrain/p/3405197.html](https://www.cnblogs.com/dancingrain/p/3405197.html)
+[判断链表中是否有环 ----- 有关单链表中环的问题](https://www.cnblogs.com/dancingrain/p/3405197.html)
 

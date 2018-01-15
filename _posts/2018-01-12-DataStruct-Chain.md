@@ -122,10 +122,13 @@ public:
 **注意这个终止条件：while (fast && fast->next)。**
 
 ### 4、剑指offer——反转链表
-### 题目描述
+#### Reverse Linked List
+**题目描述** 
+
 输入一个链表，反转链表后，输出链表的所有元素。
 
-### 分析
+**分析**
+
 ![_config.yml]({{ site.baseurl }}/images/reverse_list.png)
 在上图所示的链表中，h、i、j是3个相邻的节点。假设进过若干操作，我们已经把节点h之前的指针全部调整完毕，这些节点的next都指向前一个节点。接下来我们把i的next指向h，此时链表结构如第二个图所示。由于i的next指向了它的前一个节，导致我们无法在链表中遍历到节点j，因此，为了避免链表在节点i处断开，我们需要在调整节点i的next指针之前将j保存下来。另外，由于我们需要将i的next指针指向它的前面一个节点，因此我们需要事先记录前面的节点h。
 因此，我们需要相应定义3个指针，分别指向当前遍历的节点，它的前一个节点，它的后一个节点。
@@ -145,8 +148,54 @@ public:
 	}
 ```
 **注意** 
+
 **注意代码的鲁棒性。在这里要考虑当链表为空和链表只包含一个节点的情况。**
 
+#### Reverse Linked ListII
+**题目描述** 
+Reverse a linked list from position m to n. Do it in-place and in one-pass.
+
+For example:
+Given 1->2->3->4->5->NULL, m = 2 and n = 4,
+
+return 1->4->3->2->5->NULL.
+
+Note:
+Given m, n satisfy the following condition:
+1 ≤ m ≤ n ≤ length of list.
+
+**分析**
+
+这道题是对上一道题的扩展，选择链表中的某段进行翻转。这道题的要求是原地进行，并且只通过一次遍历完成。思路是，先找到第一个需要翻转的节点的前一个节点即第m-1个节点，记录下该节点，然后从该节点的后面一个节点开始，开始进行链表翻转，直到第n个节点，注意要记录下第n+1个节点的位置。然后将翻转后的链表连接到第m-1个节点后，第n+1个节点前。（**这里容易忽略的情况是当第一个节点是头结点的情况。对于链表问题，根据以往的经验，一般都是要建立一个dummy节点，连上原链表的头结点，这样的话，就算头结点有变动，我们还可以通过dummy->next来获得新链表的头结点。**），
+
+```c++
+class Solution {
+public:
+    ListNode* reverseBetween(ListNode* head, int m, int n) {
+        ListNode *dummy=new ListNode(-1);
+        dummy->next=head;
+        ListNode *ptr=dummy;
+        //ptr为第m-1个节点
+        for(int i=1;i<m;i++){
+            ptr=ptr->next;
+        }
+        //将第m到第n个节点翻转
+        ListNode *pre=nullptr,*cur=ptr->next;
+        for(int i=m;i<=n;i++){
+            ListNode *succ=cur->next;
+            cur->next=pre;
+            pre=cur;
+            cur=succ;
+        }
+        //将翻转后的节点连接到原来的链表上
+        ptr->next->next=cur;//ptr->next指向的还是原来的第m个节点的位置，即现在翻转后的链表段中最后一个节点的位置。
+        ptr->next=pre;
+        return dummy->next;
+    }
+};
+```
+
+**小技巧：当操作链表时，如果头结点改变了，可以事先建立一个假想的节点dummy，让dummy->next指向头节点，这样，返回时返回dummy->next即是新的头结点，这样，头结点改变了也不影响程序的正确性。**
 
 ### 5、leetcode——Reorder List
 ### 题目描述
@@ -345,9 +394,154 @@ public:
 看看下图就会明白了：
 ![_config.yml]({{ site.baseurl }}/images/circle_chain5.png)
 
+### 7、leetcode—— Partition List
+#### 题目描述
+Given a linked list and a value x, partition it such that all nodes less than x come before nodes greater than or equal to x.
+
+You should preserve the original relative order of the nodes in each of the two partitions.
+
+For example,
+Given 1->4->3->2->5->2 and x = 3,
+return 1->2->2->4->3->5.
+
+#### 分析
+这道题要求我们划分链表，把所有小于给定值得节点都移到前面，大于或等于该值的节点顺序不变，相当于一个局部排序问题。
+**解法一：**首先找到第一个大于或者等于给定值的节点，用题目给的例子来说就是先找到4，然后再找小于3的值，每找到一个就将其取出置于4之前即可。
+代码如下：
+```c++
+class Solution {
+public:
+	ListNode* partition(ListNode* head, int x) {
+		ListNode *dummy = new ListNode(-1);
+		dummy->next = head;
+		ListNode *pre = dummy;
+		while (pre->next && pre->next->val < x)//找到不小于x的第一个节点的前一个节点
+			pre = pre->next;
+		ListNode *cur = pre;
+		while (cur->next){
+			if (cur->next->val < x){
+				ListNode *tmp = cur->next;
+				cur->next = tmp->next;
+				tmp->next = pre->next;
+				pre->next = tmp;
+				pre = pre->next;				
+			}
+			else{
+				cur = cur->next;
+			}
+		}
+		return dummy->next;
+	}
+};
+```
+
+**小技巧：当考察要移动的节点时，需要将其前面的节点的next指到其后面的节点上，所以要知道其前面的节点。根据单向链表的特点，不能由后向前查找节点，故在上面的代码中，cur指向的是当前考察节点的前面一个节点（若是cur指向当前考察的节点，则还需另外一个变量记录前面的节点，增加了代码的复杂性）。**
+
+**解法二：**将所有小于给定值的节点取出组成一个新的链表，此时原链表中剩余的节点的值都大于或等于给定值，只要将原链表直接接到新链表后即可，代码如下：
+```c++
+ListNode* partition2(ListNode* head, int x) {
+		ListNode *dummy = new ListNode(-1);
+		dummy->next = head;
+		ListNode *h2 = new ListNode(-1);
+		ListNode *p = h2, *cur = dummy;
+		while (cur->next){
+			if (cur->next->val < x){
+				p->next = cur->next;
+				p = p->next;
+				cur->next=p->next;				
+				p->next = nullptr;
+			}
+			else{
+				cur = cur->next;
+			}
+		}
+		p->next = dummy->next;
+		return h2->next;
+	}
+```
+
+### 8、leetcode—— Rotate List
+#### 题目描述
+Given a list, rotate the list to the right by k places, where k is non-negative.
+
+Example:
+```
+Given 1->2->3->4->5->NULL and k = 2,
+
+return 4->5->1->2->3->NULL.
+```
+#### 思路
+**解法一：** 
+最初想到的解法是用快慢指针，快指针先走k步，然后慢指针再走，快指针fp->next为null时，慢指针sp->next指向的即为旋转后的链表的第一个节点，然后即可以进行旋转操作。
+**注意：**
+**值得注意的有以下两点：**
+**1.当链表为空的情况。**
+**2.当k大于链表的长度时。**
+所以首先应当先遍历链表，计算出链表的长度count，然后取k=k%count。然后再按照上述的快慢指针进行旋转。
+
+代码如下：
+
+```c++
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {        
+        if(!head || k==0)
+            return head;
+        ListNode *p=head;
+        int count=0;
+        while(p){//计算链表的长度
+            count++; 
+            p=p->next;//这句又忘记了。。。。。
+        } 
+        k=k%count;//k对count取余
+        if(k==0)
+            return head;
+        ListNode *fp=head,*sp=head;//用快慢指针
+        for(int i=0;i<k;i++)
+            fp=fp->next;
+        while(fp->next){
+            sp=sp->next;
+            fp=fp->next;
+        }
+        fp->next=head;
+        head=sp->next;
+        sp->next=nullptr;
+        return head;    
+    }
+};
+```
+**解法二：** 
+只用一个指针，原理是先遍历链表获得链表的长度count，然后把链表的头尾连接起来，然后再往后走n-k%n个节点就达到新链表的头结点的前一个节点，这时展开链表即可。
+
+代码如下：
+```c++
+class Solution {
+public:
+    ListNode* rotateRight(ListNode* head, int k) {    
+        if(!head || k==0)
+            return head;
+        ListNode *p=head;
+        int count=1;
+        while(p->next){
+            count++;
+            p=p->next;
+        }
+        p->next=head;
+        k=k%count;
+        for(int i=0;i<count-k;i++){
+            p=p->next;
+        }
+        head=p->next;
+        p->next=nullptr;
+        return head;
+    }
+};
+```
 
 ##  参考
 
 [[LeetCode] Sort List 链表排序](https://www.cnblogs.com/grandyang/p/4249905.html)
 [判断链表中是否有环 ----- 有关单链表中环的问题](https://www.cnblogs.com/dancingrain/p/3405197.html)
+[[LeetCode] Partition List 划分链表](https://www.cnblogs.com/grandyang/p/4321292.html)
+
 

@@ -538,6 +538,73 @@ public:
 };
 ```
 
+
+### 8、leetcode—— RRemove Duplicates from Sorted List II（删除重复节点）
+#### 题目描述
+Given a sorted linked list, delete all duplicates such that each element appear only once.
+
+For example,
+Given 1->1->2, return 1->2.
+Given 1->1->2->3->3, return 1->2->3.
+
+#### 思路
+定义一个指针，指向链表的第一个元素，然后比较第一个元素和第二个元素，若相同，则删除第二个元素，若不相同，则将指针移到第二个元素处。
+一直执行上述步骤，直到链表尾部。
+
+代码：
+```c++
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+       ListNode *cur = head;
+		while (cur){
+			while ( cur->next  &&  cur->val==cur->next->val)			{
+				cur->next = cur->next->next;
+			}
+			cur = cur->next;
+		}
+		return head;
+    }
+};
+```
+
+### 9、leetcode—— RRemove Duplicates from Sorted List II（删除重复节点II）
+#### 题目描述
+Given a sorted linked list, delete all nodes that have duplicate numbers, leaving only distinct numbers from the original list.
+
+For example,
+Given 1->2->3->3->4->4->5, return 1->2->5.
+Given 1->1->1->2->3, return 2->3.
+
+#### 思路
+我的思路是用一个val值记录前一个节点的值，用pre指针记录已经处理过的链表的最后一个节点，用指针cur指向当前考察的节点。因为链表的头结点可能改变，所以用一个假象的节点dummy，dumm->next指向头结点。
+初始时，pre指向dummy，cur指向head，val的类型定义为long long型，并且初始值设为LLONG_MAX（因为考察的值的类型为int型，val的初始值应当不能和int型中的任何值相同，所以将其设置为long long型），然后对当前的cur节点，其思想有点类似删除链表中值为val的节点，不过不同的是val的值是变化的。且只有当cur的值不和前一个节点相同并且不和下一个节点相同时，才将其保留到链表中。
+代码如下：
+```c++
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {        
+        ListNode *dummy=new ListNode(-1);
+        dummy->next=head;
+        long long  val = LLONG_MAX;
+        ListNode *pre=dummy,*cur=head;
+        while(cur){
+            if(cur->val!=val){
+                val=cur->val;//当cur的值不和val相同时，更新val
+                if(!cur->next || cur->val!=cur->next->val){//更新pre节点
+                    pre->next=cur;
+                    pre=cur;
+                }
+            }
+            cur=cur->next;
+        }
+        pre->next=nullptr;
+        return dummy->next;
+    }
+};
+```
+
+
 ##  参考
 
 [[LeetCode] Sort List 链表排序](https://www.cnblogs.com/grandyang/p/4249905.html)

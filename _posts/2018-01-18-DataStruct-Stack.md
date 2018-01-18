@@ -15,7 +15,7 @@ class Solution {
 public:
     bool IsPopOrder(vector<int> pushV,vector<int> popV) {
         bool res = false;
-		if (pushV.empty() || popV.empty())
+		if (pushV.empty() || popV.empty() || pushV.size() != popV.size())//注意当两个向量的size不相同时，应该返回false，否则有可能会导致后面的pop或top越界
 			return res;
 		stack<int> S;		
 		int iPop = 0, iPush = 0;
@@ -28,14 +28,93 @@ public:
 			}
 			if (S.top() != popV[iPop])//因为前面的while循环中有该条件，所以满足此条件的唯一原因是此时的iPush已经越界，隐含pushV中已经没有可补充的元素，但是此时的栈顶元素却不与输出序列当前考察元素相同
 				break;
-			S.pop();//
+			S.pop();//因为两个向量的大小相同（前面已经排除掉了两个size不同的情形），由于若s为空的话，前面肯定会执行push操作，所以push的操作肯定大于或等于pop
 		}
-		if (S.empty() && iPop == popV.size())
+		if (S.empty() && iPop == popV.size())//最后栈为空，并且pushV中的元素都已经考察完毕
 			res = true;
 		return res;
     }
 };
 ```
+
+### 2、LeetCode——150. Evaluate Reverse Polish Notation（计算逆波兰表达式）
+#### 逆波兰表达式（RPN)
+逆波兰表达式是数学表达式的一种，其语法概括为：操作符紧邻于对应的（最后一个）操作数。比如“12+”即为通常习惯的“1+2”.
+RPN表达式也称作后缀表达式（postfix），原表达式称作中缀表达式（infix）。RPN表达式中运算符的执行次序与其在RPN表达式中出现的次序完全吻合。
+例：“12+34^\*”表示“（1+2）\*3^4"
+
+
+#### 题目描述
+Evaluate the value of an arithmetic expression in Reverse Polish Notation.
+
+Valid operators are +, -, *, /. Each operand may be an integer or another expression.
+
+Some examples:
+```
+  ["2", "1", "+", "3", "*"] -> ((2 + 1) * 3) -> 9
+  ["4", "13", "5", "/", "+"] -> (4 + (13 / 5)) -> 6
+```
+
+#### 分析
+借助辅助栈，存放操作数。对于每个string，若其为数字，则将其压入栈中，若为操作数，则从栈中取出相应数量的操作数并执行相应的操作，然后将操作结果压入栈中。当扫描完表达式，栈中唯一存储的操作数即为最终结果（假设所给的逆波兰表达式正确）。
+
+```c++
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+		stack<int> S;
+		for (vector<string>::iterator it = tokens.begin(); it != tokens.end(); it++){
+			string s = *it;
+			if (s == "+" || s == "-" || s == "*" || s == "/"){
+				int tmp2 = S.top(); S.pop();//注意第二个参数先出栈
+				int tmp1 = S.top(); S.pop();				
+				switch (s[0])
+				{
+				case '+':
+					S.push(tmp1 + tmp2);
+					break;
+				case '-':
+					S.push(tmp1 - tmp2);
+					break;
+				case '*':
+					S.push(tmp1 * tmp2);
+					break;
+				case '/':
+					S.push(tmp1 / tmp2);
+					break;
+				default:
+					break;
+				}
+			}
+			else{
+				S.push(stringToInt(s));
+			}
+		}
+		return S.top();
+	}
+
+	int stringToInt(string s){
+		int res = 0;
+		int isnegative = false;//注意考虑负数的情况。
+		for (int i = 0; i < s.size(); i++){
+			if (i==0 && s[i] == '-'){
+				isnegative = true;
+				continue;
+			}
+			res = res * 10 + static_cast<int>(s[i] - '0');
+		}
+		return isnegative ? res*(-1) : res;
+	}
+};
+```
+
+**值得注意的几点：**
+
+**1.注意从栈中取操作数时，先弹出来的是第二操作数，后弹出的才是第一操作数。**
+
+**2.从string转换为int时，要注意考虑负数的情况。**
+
+**3.string类型的判等：string s="hello",s=="hello",返回的是true。**
 
 
 ##  参考

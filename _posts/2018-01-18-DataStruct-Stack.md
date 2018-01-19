@@ -116,8 +116,115 @@ public:
 
 **3.string类型的判等：string s="hello",s=="hello",返回的是true。**
 
+2、LeetCode——84. Largest Rectangle in Histogram（求直方图中的最大矩形面积）
+[http://blog.csdn.net/yutianzuijin/article/details/52072427](http://blog.csdn.net/yutianzuijin/article/details/52072427)
+**解法一**
+暴力解法：遍历所有的起始和结束位置，然后计算该区域内的面积，找到最大的。具体实现过程：从第0个位置开始遍历起点，选定起点之后，从起点到末尾都可以当做终点，所以有O(n2)种可能。在固定了起点之后，后续对终点的遍历有一个特点：构成长方形的高度都不高于之前所构造长方形的高度，所以长方形的高度即是到当前终点为止的最小值，宽度即是终点位置减去起点位置加1。
+
+```c++
+class Solution {
+public:
+	int largestRectangleArea1(vector<int>& heights) {//暴力解法
+		if (heights.empty())
+			return NULL;
+		int maxArea = -1;
+		for (int i = 0; i < heights.size(); i++){
+			int minHeight = heights[i];
+			for (int j = i; j < heights.size(); j++){
+				if (heights[j] < minHeight)
+					minHeight = heights[j];
+				int tmpArea = (j - i + 1)*minHeight;
+				if (tmpArea > maxArea)
+					maxArea = tmpArea;
+			}
+		}
+		return maxArea;
+	}
+};
+```
+
+注：在LeetCode中提示Time Limit Exceeded超时错误。
+
+**解法二**
+
+![描述]({{ site.baseurl }}/images/queues.png)
+
+基本思路（如上图所示）：从第一个柱子（编号1）开始，找出所有的后一个比前一个上升的柱子（从编号1到编号13），直到遇到一个高度下降的柱子（编号14）。而且把下降之前的编号（从1到13）推入到一个堆栈中，然后计算栈顶编号与下降编号的前一个编号围成的面积（即到13），然后弹出栈顶元素，继续按照之前的方法继续计算栈顶元素的面积，直到栈顶元素的高度不再大于下降元素的高度或者栈为空，并保留最大的矩形面积。从栈顶开始，比如，13，12-13，...，8-13，7-13，...，直到3-13。但是14能参与比它矮的较远的编号2（2-14，就是B1B2）和编号1（1-14，就是C1C2）组成矩形。以看出，堆栈中保留了到当前为止，所有将要参与可能矩形计算的所有柱子的编号。有了这些编号，我们可以计算所有可能的矩形的面积，从而求出最大的。注意了，堆栈中的编号的柱子高度是非递减的！
+**值得注意的是：1.当栈为空时，计算矩形面积时，宽是从下标0开始的，因为栈中保存的index的高度是非递减的，所以，若栈为空时，证明之前的高度都要大于当前高度。故以当前高度肯定能和前面的所有高度构成矩形。**
+
+**2.对于循环结束的处理：可以采用两种方法，一种是在原数组最后添一个负数，这样，就会清空前面栈中的所有元素，但是这样会改变原来的数组。另一种方法是，对index=heights.size()做特殊处理。**
+
+**3.注意当输入为空时，面积应当为0**
+
+在原数组后面添-1
+```c++
+int largestRectangleArea2(vector<int>& heights) {
+		heights.push_back(-1);
+		int maxArea = 0;
+		int index = 0;
+		stack<int> S;
+		while (index < heights.size()){
+			if (S.empty() || heights[S.top()] < heights[index]){
+				S.push(index);
+				index++;
+			}
+			else{
+				int cur = S.top();
+				S.pop();
+				int tmpArea = 0;
+				if (S.empty()){
+					tmpArea = heights[cur] * index;
+				}
+				else{
+					tmpArea = heights[cur] * (index - S.top() - 1);
+				}
+				if (tmpArea > maxArea)
+					maxArea = tmpArea;
+			}
+
+		}
+		return maxArea;
+	}
+```
+
+不改变原数组
+
+```c++
+int largestRectangleArea3(vector<int>& heights) {		
+		int maxArea = 0;
+		int index = 0;
+		stack<int> S;
+		while (index <= heights.size()){
+			if (S.empty()  || (index!=heights.size() && heights[S.top()] < heights[index] )){//当heights为空时，满足该条件，然后index++，退出循环，最后的结果还是0，满足要求的
+				S.push(index);
+				index++;
+			}
+			else{
+				int cur = S.top();
+				S.pop();
+				int tmpArea = 0;
+				if (S.empty()){
+					tmpArea = heights[cur] * index;
+				}
+				else{
+					tmpArea = heights[cur] * (index - S.top() - 1);
+				}
+				if (tmpArea > maxArea)
+					maxArea = tmpArea;
+			}
+
+		}
+		return maxArea;
+	}
+```
+
+
 
 ##  参考
+
+[leetcode之Largest Rectangle in Histogram](http://blog.csdn.net/yutianzuijin/article/details/52072427)
+
+[很神奇的解法！怎么求柱状图中的最大矩形？](http://chuansong.me/n/390896436960)
 
 
 

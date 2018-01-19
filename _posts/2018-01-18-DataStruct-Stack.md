@@ -116,7 +116,27 @@ public:
 
 **3.string类型的判等：string s="hello",s=="hello",返回的是true。**
 
-2、LeetCode——84. Largest Rectangle in Histogram（求直方图中的最大矩形面积）
+### 3、LeetCode——84. Largest Rectangle in Histogram（求直方图中的最大矩形面积）
+
+#### 题目描述：
+Given n non-negative integers representing the histogram's bar height where the width of each bar is 1, find the area of largest rectangle in the histogram.
+
+![描述]({{ site.baseurl }}/images/stack_rectangle1.png)
+
+Above is a histogram where width of each bar is 1, given height = [2,1,5,6,2,3].
+
+![描述]({{ site.baseurl }}/images/stack_rectangle2.png)
+
+The largest rectangle is shown in the shaded area, which has area = 10 unit.
+
+For example,
+Given heights = [2,1,5,6,2,3],
+return 10.
+
+
+
+### 分析
+
 [http://blog.csdn.net/yutianzuijin/article/details/52072427](http://blog.csdn.net/yutianzuijin/article/details/52072427)
 **解法一**
 暴力解法：遍历所有的起始和结束位置，然后计算该区域内的面积，找到最大的。具体实现过程：从第0个位置开始遍历起点，选定起点之后，从起点到末尾都可以当做终点，所以有O(n2)种可能。在固定了起点之后，后续对终点的遍历有一个特点：构成长方形的高度都不高于之前所构造长方形的高度，所以长方形的高度即是到当前终点为止的最小值，宽度即是终点位置减去起点位置加1。
@@ -218,6 +238,80 @@ int largestRectangleArea3(vector<int>& heights) {
 	}
 ```
 
+### 4、trapping-rain-water(积水问题)
+
+#### 题目描述：
+Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it is able to trap after raining.
+
+For example, 
+Given[0,1,0,2,1,0,1,3,2,1,2,1], return6.
+
+![描述]({{ site.baseurl }}/images/stack_water.png)
+
+The above elevation map is represented by array [0,1,0,2,1,0,1,3,2,1,2,1]. In this case, 6 units of rain water (blue section) are being trapped. Thanks Marcos for contributing this image!
+
+### 分析
+
+解法一：
+利用栈。我们的做法是，遍历高度，如果此时的栈为空，或者当前的高度小于等于栈顶的高度，则把当前高度的坐标压入栈，注意我们不直接把高度压入栈，而是把坐标压入栈，这样做的方便我们后面计算水平距离。当我们遇到比栈顶高度大的时候，就说明可能会有坑存在，可以装雨水。此时我们的栈里至少有一个高度，如果只有一个的话，那么就不能形成坑，我们直接跳过，如果多于一个的话，那么我们此时把栈顶元素取出来当做坑，新的栈顶元素就是左边界，当前高度是右边界，只要取二者的较小者，减去坑的高度，长度就是右边边界的坐标减去左边边界的坐标再减一，二者相乘就是盛水量。
+
+```c++
+class Solution {
+public:
+	int trap(vector<int>& height) {
+		int i = 0, water = 0;
+		stack<int> S;
+		while (i < height.size()){
+			if (S.empty() || height[i] <= height[S.top()]){
+				S.push(i);
+				i++;
+			}
+			else{
+				int low = S.top();
+				S.pop();
+				if (S.empty())
+					continue;
+				int h = (height[i] < height[S.top()]) ? height[i] : height[S.top()];
+				water += (h - height[low])*(i - S.top() - 1);
+			}
+		}
+		return water;
+	}
+};
+```
+
+解法一：
+双指针。我们使用两个指针，一个从左向右遍历，一个从右向左遍历。从左向右遍历时，记录下上次左边的峰值，如果右边一直没有比这个峰值高的，就已经加上这些差值。从右向左遍历时，记录下上次右边的峰值，如果左边一直没有比这个峰值高的，就加上这些差值。难点在于，当两个指针遍历到相邻的峰时，我们要选取较小的那个峰值来计算差值。所以，我们在遍历左指针或者右指针之前，要先判断左右两个峰值的大小。
+注：移动左指针或者右指针时，要先判断left < right
+
+```c++
+int trap2(vector<int>& height) {
+		if (height.size() < 3)
+			return 0;
+		int left = 0, right = height.size() - 1;
+		int sum = 0;
+		//找到左边的第一个峰值
+		while (left < right && height[left] <= height[left + 1]) left++;
+		//找到右边的第一个峰值
+		while (left < right && height[right] <= height[right - 1]) right--;
+		while (left < right){
+			int leftVal = height[left];
+			int rightVal = height[right];
+			if (leftVal < rightVal){	//如果左边峰值小，则先计算左边			
+				while (left<right && height[++left] <= leftVal){
+					sum += leftVal - height[left];
+					
+				}				
+			}
+			else{//如果右边峰值小，则先计算右边
+				while (left < right && height[--right]<=rightVal){
+					sum += rightVal - height[right];					
+				}
+			}
+		}
+		return sum;
+	}
+```
 
 
 ##  参考

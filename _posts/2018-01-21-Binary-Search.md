@@ -125,6 +125,135 @@ int binarySearch3(vector<int> vecs, int value){
 循环终止时，lo=hi。考察此时的元素A[lo-1]和A[lo]:最为A[0,lo)内的最后一个元素，A[lo-1]必定不大于e；作为A[lo,n)内的第一个元素，A[lo]必定大于e，也就是说A[lo-1]即是原向量中不大于e的最后一个元素。因此，在循环结束后，无论成功与否，只需要返回lo-1即可。
 
 
+### 一些值得注意的问题
+#### 左右边界的更新以及避免陷入死循环
+1、在版本A中更新左右边界的方法是hi=mi或lo=mi+1（因为是左开右闭区间，所以不管是更新左边界还是更新右边界都去掉了中间点mi)，所以每次循环后问题的规模至少减一，最后肯定能够达到lo==hi这一终止条件。
+反之，如果更新左右边界时，将mi保留的话，则可能陷入死循环：例如在{1}中搜索。初次搜索时，mi为0，保留mi到hi，由于是[mi,hi)所以区间并没有改变，故会陷入死循环。
+
+2.在版本B中更新左右边界的方法是hi=mi或者lo=mi。在更新右边界时去掉了mi，但是在更新左边界时却保留了mi，如果循环终止的条件是lo<hi的话，就可能会陷入死循环，例如上面再{1}中搜索2的例子。故在版本B中的循环结束条件是1<hi-lo，即当搜索区间只有一个元素时，就会终止循环。这样会避免死循环吗？答案是肯定的。分析如下：当元素大于等于两个时，每次循环的mi不会与左边界重合，故每次循环一定会使规模减少，只有当hi-lo==1时，即只有一个元素时（左闭右开区间），这时的mi等于lo，可能导致死循环，但是这时却已经不满足我们的循环条件了，循环终止，故不会陷入死循环。
+
+3.版本C与版本A更新左右边界的方法一样。故同样不会陷入死循环。
+
+## LeetCode相关题目
+### LeetCode——35. Search Insert Position
+#### 题目描述
+Given a sorted array and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.
+
+You may assume no duplicates in the array.
+
+Example 1:
+
+```
+Input: [1,3,5,6], 5
+Output: 2
+```
+Example 2:
+```
+Input: [1,3,5,6], 2
+Output: 1
+```
+
+Example 3:
+```
+Input: [1,3,5,6], 7
+Output: 4
+```
+
+Example 4:
+```
+Input: [1,3,5,6], 0
+Output: 0
+```
+
+#### 分析
+解法一：
+这道题与版本C很像，但是不同的是，当查找失败时返回的位置不同，版本C返回的是不大于该元素的最后一个元素的位置，而题目要求是返回该元素的插入位置，即不大于该元素的最后一个位置的后面一个位置。故我们可以在最后返回时，判断查找是否成功来选择不同的返回结果，代码如下：
+
+```c++
+    int searchInsert(vector<int>& nums, int target) {
+       
+        int lo=0,hi=nums.size();
+        while(lo<hi){
+            int mi=(lo+hi)>>1;
+            if(target<nums[mi])
+                hi=mi;
+            else
+                lo=mi+1;
+        }
+        --lo;
+        return (0<=lo && lo<nums.size() && nums[lo]==target)?lo:lo+1;
+    }
+```
+
+解法二：
+其实该题也可采用第一种方法，当查找成功时，返回当前下标mi，当查找失败时必定有lo==hi，并且根据循环不显示，[0,lo)中的元素必定小于target，[lo,n)中的元素必定大于target，故lo即为要target要插入的位置。
+
+```c++
+    int searchInsert(vector<int>& nums, int target) {
+        int lo = 0, hi = nums.size();
+		while (lo < hi){
+			int mi = (lo + hi) >> 1;//右移运算比除法运算速度要快
+			if (target < nums[mi])
+				hi = mi;
+			else if (nums[mi] < target)
+				lo = mi + 1;
+			else
+				return mi;
+		}
+		return lo;
+    }
+```
+
+**注：若是要查找含有重复元素的最后一个元素的话，只能用版本C。**
+
+### 剑指offer——旋转数组的最小数字
+#### 题目描述
+把一个数组最开始的若干个元素搬到数组的末尾，我们称之为数组的旋转。 输入一个非递减排序的数组的一个旋转，输出旋转数组的最小元素。 例如数组{3,4,5,1,2}为{1,2,3,4,5}的一个旋转，该数组的最小值为1。 NOTE：给出的所有元素都大于0，若数组大小为0，请返回0。
+
+#### 分析
+我们注意到旋转之后的数组可以划分为两个排序的子数组，而且前面数组的元素都大于或者等于后面子数组的元素。我们还注意到，我们要找的最小的元素恰好是是这两个数组的分界线。故可以尝试采用二分查找的思路来找到这个最小的元素。
+思路：我们用两个指针分别指向数组的第一个元素和最后一个元素，按照题目要求，第一个数组元素应该要大于或者等于最后一个元素（这其实并完全对，还有特例，后面再加以讨论）。接着我们可以找到数组的中间元素，如果中间元素大于或等于第一个指针指向的元素，说明他位于全面的子数组，我们要找的最小值应该在后半部分，故将第一个指针指向中间元素。同理，若是中间元素小于或者等于第二个指针指向的元素，说明中间元素位于后面的子数组中，故将第二个指针指向中间元素。
+按照上述的思路，第一个指针总是指向前面的递增数组中的元素，第二个指针总是指向后面的递增数组中的元素。最终，第一个指针会指向前面子数组的最后一个元素，第二个指针会指向后面数组的第一个元素。也就是她们终会指向相邻的元素，此时，第二个指针指向的元素即是我们要找的最小的元素。这就是循环终止的条件。
+但是按照定义，还有一个特例：即将排序数组的前面的0个元素搬到后面，即排序数组本身，这仍然是数组的一个旋转。需要考虑到这种情况。
+另外，当index1，index2，indexMid三个指针指向的元素值相同时，例如数组{1,0,1,1,1,1}和数组{1,1,1,0,1}这样的情况，在这两组数组中，第一个数字、最后一个数字和中间数字都是1，我们无法确定中间的数字1时属于前面的子数组还是属于后面的子数组，在这种情况下，只能进行顺序查找了，，，，
+
+```c++
+class Solution {
+public:
+    int minNumberInRotateArray(vector<int> rotateArray) {
+       if(rotateArray.empty())//数组为空的情况
+           return 0;
+        int index1=0,index2=rotateArray.size()-1;
+        int indexMid=index1;//初始时将indexMid指向第一个元素，是考虑到数组旋转了0个元素的情况
+        while(rotateArray[index1]>=rotateArray[index2]){//在这里数组没有经过旋转的情况可以排除，但仍然包含了没有经过旋转，但是前后元素相等的情况
+            if(1==index2-index1){//循环终止
+                indexMid=index2;
+                break;
+            }
+            indexMid=(index1+index2)>>1;
+            if(rotateArray[index1]==rotateArray[index2] && rotateArray[index1]==rotateArray[indexMid])//如果三个指针指向的元素值相同时只能进行顺序查找，这个判断条件也包含了只有一个数组的情况
+                return minInorder(rotateArray,index1,index2);
+            if(rotateArray[indexMid]>=rotateArray[index1])
+                index1=indexMid;
+            else if(rotateArray[indexMid]<=rotateArray[index2])
+                index2=indexMid;
+        }
+        return rotateArray[indexMid];
+    }
+    
+    int minInorder(vector<int> &rotateArray,int index1,int index2){
+        int res=rotateArray[index1];
+        for(int i=index1+1;i<=index2;i++){
+            if(res>rotateArray[i]){
+                res=rotateArray[i];
+                break;
+            }
+        }
+        return res;
+    }
+};     
+```
+
 ##  参考
 
 

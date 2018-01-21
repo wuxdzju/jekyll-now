@@ -254,8 +254,106 @@ public:
 };     
 ```
 
-##  参考
+### LeetCode——33. Search in Rotated Sorted Array
+#### 题目描述
+Suppose an array sorted in ascending order is rotated at some pivot unknown to you beforehand.
 
+(i.e., 0 1 2 4 5 6 7 might become 4 5 6 7 0 1 2).
+
+You are given a target value to search. If found in the array return its index, otherwise return -1.
+
+You may assume no duplicate exists in the array.
+
+#### 分析
+一般情况下，我们采用二分法，直接判断中点和目标的关系，就可知道目标是在左半部分还是在右半部分，这背后其实隐含了这是一段有序序列这一假设。
+而本题中，这个假设不存在了，因为起点到终点之间有可能有个断片。不过旋转有序数组有个特点，假设本身是个升序序列，从左向向右。如果左边的点比右边的点小，则说明这两个点之间是有序的，不存在旋转点。如果左边的点比右边的点大，说明这两个点之间存在一个旋转点，导致不再有序。
+因为只有一个旋转点，所以一分为二之后，肯定有一半是有序的。所以我们还是可以用二分法，不过要先判断左边有序还是右边有序。
+如果左边有序，则直接将目标和左半边的边界进行比较，就知道目标点在不在左半边，若不在左半边，则转向右半边。对于右半边有序的处理类似。
+
+代码如下：
+
+```c++
+class Solution {
+public:
+	int search(vector<int>& nums, int target) {
+		if (nums.empty())
+			return -1;
+		int left = 0, right = nums.size() - 1;
+		while (left <= right){
+			int mid = (left + right) >> 1;
+			if (nums[mid] == target)//命中目标，则返回
+				return mid;
+			if (nums[left] <= nums[mid]){//数组在左半部分有序
+				if (nums[left] <= target && target < nums[mid])
+					right = mid - 1;
+				else
+					left = mid + 1;
+			}
+			else{//数组在右半部分有序
+				if (nums[mid] < target && target <= nums[right])
+					left = mid + 1;
+				else
+					right = mid - 1;
+			}
+		}
+		return -1;
+	}
+};
+```
+
+### LeetCode——81. Search in Rotated Sorted Array II
+#### 题目描述
+Follow up for "Search in Rotated Sorted Array":
+What if duplicates are allowed?
+
+Would this affect the run-time complexity? How and why?
+
+Suppose an array sorted in ascending order is rotated at some pivot unknown to you beforehand.
+
+(i.e., 0 1 2 4 5 6 7 might become 4 5 6 7 0 1 2).
+
+Write a function to determine if a given target is in the array.
+
+The array may contain duplicates.
+
+#### 分析
+这道题与上一道题类似，不同之处在于改题允许元素重复，造成的主要问题是可能无法通过中间元素与两端元素值的比较去判断该段区间是否是递增有序区间。例如序列{1,1,0,1,1,1,1,1,1,1}。
+解决方法是当left，right，mid三者的值相同时进行特殊处理。想到的方法有两种，一是当出现三者值相同的时候，就进行顺序查找，这种方法比较笨，但也通过了oj；二是每当发现三者的值相同时，则去掉头尾元素，**再进行下一轮循环**，即left++，right--。
+代码如下；
+
+```c++
+bool search2(vector<int>& nums, int target) {
+		if (nums.empty())
+			return false;
+		int left = 0, right = nums.size() - 1;
+		while (left <= right){
+			int mid = (left + right) >> 1;
+			if (target == nums[mid])
+				return true;
+			if (nums[left] == nums[right] && nums[left] == nums[mid]){
+				left++;
+				right--;
+			}
+			else if (nums[left] <= nums[mid]){//左边有序，注意这里用的是else if
+				if (nums[left] <= target && target<nums[mid])
+					right = mid - 1;
+				else
+					left = mid + 1;
+			}
+			else{//右边有序
+				if (nums[mid]<target && target <= nums[right])
+					left = mid + 1;
+				else
+					right = mid - 1;
+			}
+
+		}
+		return false;
+	}
+```
+
+##  参考
+[[Leetcode] Search in Rotated Sorted Array 搜索旋转有序数组](https://segmentfault.com/a/1190000003811864)
 
 
 

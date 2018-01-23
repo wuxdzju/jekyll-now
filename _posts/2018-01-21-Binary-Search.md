@@ -3,6 +3,8 @@ layout: post
 title: 基础算法之二分查找
 ---
 
+[TOC]
+
 ## 1、二分查找总结
 ### 1.版本A——三分支，查找失败时返回-1
 **注：** 以下都采用左闭右开区间
@@ -134,7 +136,7 @@ int binarySearch3(vector<int> vecs, int value){
 
 3.版本C与版本A更新左右边界的方法一样。故同样不会陷入死循环。
 
-## LeetCode相关题目
+## 2、LeetCode相关题目
 ### LeetCode——35. Search Insert Position
 #### 题目描述
 Given a sorted array and a target value, return the index if the target is found. If not, return the index where it would be if it were inserted in order.
@@ -351,6 +353,131 @@ bool search2(vector<int>& nums, int target) {
 		return false;
 	}
 ```
+
+### LeetCode——34. Search for a Range
+#### 题目描述
+
+Given an array of integers sorted in ascending order, find the starting and ending position of a given target value.
+
+Your algorithm's runtime complexity must be in the order of O(log n).
+
+If the target is not found in the array, return [-1, -1].
+
+For example,
+Given [5, 7, 7, 8, 8, 10] and target value 8,
+return [3, 4].
+
+#### 分析
+
+解法一：
+这道题最直接的想法利用版本C，找到target的右边界，，然后向左边扩展，严格来说，当最坏情况下，向左边扩展时，可能会搜索整个向量，时间复杂度变成O(n)
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {//采用左闭右开区间
+        //解法一：先找到target的右边界，然后向左边扩展，严格来说，当最坏情况下，向左边扩展时，可能会搜索整个向量，时间复杂度变成O(n)
+        vector<int> res={-1,-1};
+        int lo=0,hi=nums.size();
+        while(lo<hi){
+            int mi=(lo+hi)>>1;
+            if(target<nums[mi])
+                hi=mi;
+            else
+                lo=mi+1;
+        }
+        lo--;
+        if(lo<0 || nums[lo]!=target)
+            return res;
+        res[1]=lo;
+        while(lo>=0 && nums[lo]==target) lo--;
+        res[0]=++lo;
+        return res;
+    }
+};
+```
+
+解法二：两次运用版本C，第一次查找右边界，第二次查找左边界，注意，两次判断的条件不同。
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {//采用左闭右开区间
+        //解法二，运用两次二分查找，第一次查找右边界，第二次查找左边界
+        vector<int> res={-1,-1};
+        int lo=0,hi=nums.size();
+        //查找右边界
+        while(lo<hi){
+            int mi=(lo+hi)>>1;
+            if(target<nums[mi])
+                hi=mi;
+            else
+                lo=mi+1;
+        }
+        lo--;
+        //当不存在该元素时，返回[-1,-1]
+        if(lo<0 || nums[lo]!=target)
+            return res;
+        //查找左边界
+        res[1]=lo;
+        hi=lo+1;
+        lo=0;
+        while(lo<hi){
+            int mi=(lo+hi)>>1;
+            if(target<=nums[mi])//注意这里的等于号，因为mi处元素的值可能为target，但此时，却将mi赋给hi，即舍弃了该值，故最终该值会落在后面的区域，从而保证了hi之前的所有元素都小于targe，故最终的hi即为左边边界
+                hi=mi;
+            else
+                lo=mi+1;
+                
+        }
+        res[0]=hi;
+        return res;
+        
+    }
+};
+```
+
+**注意：注意找左边界时的等于号，因为mi处元素的值可能为target，但此时，却将mi赋给hi，即舍弃了该值，故最终该值会落在后面的区域，从而保证了hi之前的所有元素都小于targe，故最终的hi即为左边边界**
+
+因为找左右边界时的判断条件只有一个等于号的区别，为避免代码的重复书写，我们可以写一个函数，并设置一个标志来区别该函数是取左边界还是求右边界。
+
+代码如下：
+
+```c++
+class Solution {
+public:
+    vector<int> searchRange(vector<int>& nums, int target) {//采用左闭右开区间
+        vector<int> res={-1,-1};
+        int lo=0,hi=nums.size();
+        //查找右边界
+        lo=solve(nums,lo,hi,target,false);
+        //当不存在该元素时，返回[-1,-1]
+        if(lo<0 || nums[lo]!=target)
+            return res;
+        //查找左边界
+        res[1]=lo;
+        hi=lo+1;
+        lo=0;
+        hi=solve(nums,lo,hi,target,true);
+        res[0]=hi;
+        return res;       
+        
+    }
+    
+    int solve(vector<int> &nums,int lo,int hi,int target,int left){
+        while(lo<hi){
+            int mi=(lo+hi)>>1;
+            if(target<nums[mi] || (left && nums[mi]==target))
+                hi=mi;
+            else
+                lo=mi+1;
+        }
+        return (left?hi:--lo);
+    }
+};
+```
+
+
 
 ##  参考
 [[Leetcode] Search in Rotated Sorted Array 搜索旋转有序数组](https://segmentfault.com/a/1190000003811864)
